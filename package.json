@@ -1,0 +1,12 @@
+{
+  	"name": "subcinode",
+    "version": "0.0.1",
+  	"description": "Your subs, now.",
+	"keywords": [ "subtitles", "subcino", "opensubtitles", "movies" ],
+	"main": "./subcino.js"
+	"author": {
+  		"name": "Alessandro Piana",
+	    "email": "a.piana89@gmail.com",
+		"url": "http://www.alessandropiana.com"
+	}
+}
