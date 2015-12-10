@@ -15,6 +15,8 @@
     "url": "http://www.alessandropiana.com"
   },
   "dependencies": {
-    "async": "^1.5.0"
+    "async": "^1.5.0",
+    "http": "0.0.0",
+    "opensubtitles-api": "^2.3.0"
   }
 }
