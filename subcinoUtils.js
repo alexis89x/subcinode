@@ -1,209 +1,355 @@
-
-module.exports.log = function( message, debug ) {
-	debug = debug || false;
-	if ( debug ) {
-		console.log( message );
-	}
+/* No comment needed */
+module.exports.logLevels = {
+    DEBUG: 60,
+    INFO: 50,
+    WARNING: 40,
+    ERROR: 30,
+    FATAL: 20,
+    ALL: 10
 };
 
-module.exports.test = function() {
-	console.log('Robberto!');
+/* No comment needed */
+module.exports.currentLogLevel = 60; // DEBUG
+
+/**
+ * Simple log function. Checks the currentLog level to prevent unnecessary logging.
+ * @param message
+ * @param logLevel - the logLevel constant.
+ */
+module.exports.log = function( message, logLevel ) {
+    logLevel = logLevel || this.logLevels.DEBUG;
+    if ( this.currentLogLevel >= logLevel ) {
+        console.log( message );
+    }
+    return this;
 };
 
-module.exports.traverseFileTree = function (item, path, cbk) {
-	var self = this;
-	path = path || "";
-	if (item.isFile) {
-		// Get file
-		item.file(cbk);
-	} else if (item.isDirectory) {
-		// Get folder contents
-		var dirReader = item.createReader();
-		dirReader.readEntries(function (entries) {
-			for (var i = 0; i < entries.length; i++) {
-				self.traverseFileTree(entries[i], path + item.name + "/", cbk);
-			}
-		});
-	}
+/**
+ * Sets the current log level according to the arguments.
+ * @param settings
+ */
+module.exports.setDebugLevel = function( settings ) {
+    if ( settings.debug ) {
+        this.currentLogLevel = this.logLevels.DEBUG;
+    } else {
+        this.currentLogLevel = this.logLevels.INFO;
+    }
+    return this;
 };
 
-module.exports.listFiles = function(dir, extensions) {
-	var fs = require('fs');
-	var files = fs.readdirSync( dir );
-	if (!extensions) {
-		return files;
-	}
+/**
+ * Parses the shell arguments.
+ * @name parseArgs
+ */
+module.exports.parseArgs = function() {
+    var argv = process.argv;
+    var args = {
+        recursive: true,
+        extensions: ['mp4', 'mkv', 'avi'],
+        langs: [ 'all' ],
+        path: process.cwd(), // By default, uses the current working directory.
+        useSubs: false,
+        debug: false
+    };
 
-	var goodFiles = [];
-	for (var i in files) {
-		var extension = files[i].substr( files[i].lastIndexOf('.') );
-		if (extensions.indexOf( extension.replace('.', '') ) > -1) {
-			goodFiles.push(files[i]);
-		}
-	}
-	return goodFiles;
+    for (var i = 0, len = argv.length; i < len; i++) {
+        var arg = argv[i];
+        var match;
+        if ((match = arg.match(/-langs=([\w,]+)/)) || (match = arg.match(/-langs=([\w]+)/))) {
+            // Languages to download
+            args.langs = (match[1] && match[1].split(',')) || args.langs;
+        } else if ((match = arg.match(/-extensions=(\w,+)/)) || (match = arg.match(/-extensions=(\w+)/))) {
+            // File extensions
+            args.extensions = (match[1] && match[1].split(',')) || args.extensions;
+        } else if (arg === "-useSubs") {
+            // Use subtitles folder ( subs/ )
+            args.useSubs = true;
+        } else if (match = arg.match(/-useSubs=(\w+)/)) {
+            // Same, but with specified options
+            args.useSubs = (match[1] == 'true');
+        } else if (arg === "-debug") {
+            // Show more log
+            args.debug = true;
+        } else if (match = arg.match(/-recursive=(\w+)/)) {
+            // If true, navigate in the subfolders
+            args.recursive = (match[1] == 'true');
+        } else if ( (arg.indexOf('-path=') === 0) ) {
+            // Specify a different path
+            args.path = (arg.replace('-path=', '') || args.path);
+        }
+    }
+
+    // Fix path backslash
+    if ( args.path.endsWith('/') ) {
+        args.path = args.path.substr( 0, args.path.length - 1 );
+    }
+    return args;
 };
 
-// List all files in a directory in Node.js recursively in a synchronous fashion
-module.exports.walkSync = function(dir, filelist, extensions, recursive) {
-	recursive = typeof recursive === 'undefined' ? true: recursive;
-	if (!recursive) {
-		return this.listFiles( dir, extensions );
-	};
-	var self = this;
-	var fs = fs || require('fs'),
-		files = fs.readdirSync(dir);
-	filelist = filelist || [];
-	files.forEach(function(file) {
-		if (fs.statSync(dir + '/' + file).isDirectory()) {
-			filelist = self.walkSync(dir + '/' + file, filelist, extensions, recursive);
-		}
-		else {
-			if ( extensions ) {
-				var extension = file.substr( file.lastIndexOf('.') );
-				if (extensions.indexOf( extension.replace('.', '') ) > -1) {
-					filelist.push({ fileName: file, path: dir, fullName: (dir ? dir + '/' : '') + file });
-				}
-			} else {
-				filelist.push({ fileName: file, path: dir, fullName: (dir ? dir + '/' : '') + file });
-			}
-		}
-	});
-	return filelist;
-};
-
-module.exports.subtitleLogin = function( settings, callbackSettings ) {
-	this.OS = this.OS || require('opensubtitles-api');
-	this.OpenSubtitles = this.OpenSubtitles || new this.OS( 'Subcino v1.0' || 'OSTestUserAgent');
-
-	var promise = this.OpenSubtitles.login();
-	promise.then(function (res) {
-		if ( callbackSettings && callbackSettings.success ) {
-			callbackSettings.success( res );
-		}
-	}).catch(function (err) {
-		if ( callbackSettings && callbackSettings.err ) {
-			callbackSettings.error( err );
-		}
-	});
-};
-
-module.exports.getHash = function( fileName ) {
-	this.OS = this.OS || require('opensubtitles-api');
-	this.OpenSubtitles = this.OpenSubtitles || new this.OS( 'Subcino v1.0' || 'OSTestUserAgent');
-	return this.OpenSubtitles.extractInfo( fileName ); // Path must be included.
-};
-
-module.exports.search = function( settings, fileInfo, callbackSettings ) {
-	this.OS = this.OS || require('opensubtitles-api');
-	this.OpenSubtitles = this.OpenSubtitles || new this.OS( 'Subcino v1.0' || 'OSTestUserAgent');
-
-	settings = settings || {};
-	settings.langs = settings.langs || 'all';
-
-	this.log( settings, true );
-	this.log( fileInfo, true );
-
-	if (!fileInfo) {
-		throw 'Missing file information';
-	}
-
-	return this.OpenSubtitles.search({
-		sublanguageid: settings.langs.join(','),        // Can be an array.join with comma, 'all', or be omitted.
-		hash: fileInfo.moviehash,   // Size + 64bit checksum of the first and last 64k
-		filesize: fileInfo.moviebytesize      // Total size, in bytes.
-	});
-};
-
+/**
+ * Deep object cloning
+ * @name extendObj
+ * @param dest
+ * @param from
+ */
 module.exports.extendObj = function(dest, from) {
-	var self = this;
-	var props = Object.getOwnPropertyNames(from), destination;
+    var self = this;
+    var props = Object.getOwnPropertyNames(from), destination;
 
-	props.forEach(function (name) {
-		if (typeof from[name] === 'object') {
-			if (typeof dest[name] !== 'object') {
-				dest[name] = {}
-			}
-			self.extendObj(dest[name],from[name]);
-		} else {
-			destination = Object.getOwnPropertyDescriptor(from, name);
-			Object.defineProperty(dest, name, destination);
-		}
-	});
+    props.forEach(function (name) {
+        if (typeof from[name] === 'object') {
+            if (typeof dest[name] !== 'object') {
+                dest[name] = {}
+            }
+            self.extendObj(dest[name],from[name]);
+        } else {
+            destination = Object.getOwnPropertyDescriptor(from, name);
+            Object.defineProperty(dest, name, destination);
+        }
+    });
+    return this;
 };
 
-module.exports.getHashes = function( list, callback, result, log )  {
-	var self = this;
-	result = result || [];
-
-	if (!list || !(list.length)) {
-		callback( result );
-		return;
-	}
-    this.log( 'Getting hash for file: ' + list[0].fullName, log );
-
-    this.getHash( list[0].fullName )
-		.then(function( infos ){
-            self.log( 'Hash got', log );
-            self.log( infos, log );
-			self.extendObj( list[0], infos );
-			result.push( list[0] );
-			list.shift();
-			self.getHashes( list, callback, result, log );
-		}).catch(function (err) {
-            self.log( 'Hash error' );
-            self.log( err, log );
-			list[0].error = true;
-			list[0].errorType = 'HASH_ERROR';
-			result.push( list[0] );
-			list.shift();
-			self.getHashes( list, callback, result, log );
-		});
+/**
+ * Obtains the current open subtitles login.
+ * @returns {*|exports|module.exports}
+ */
+module.exports.getOpenSubtitles = function() {
+    this.OS = this.OS || require('opensubtitles-api');
+    this.OpenSubtitles = this.OpenSubtitles || new this.OS( 'Subcino v1.0' || 'OSTestUserAgent');
+    return this.OpenSubtitles;
 };
 
-module.exports.getSubtitles  = function( list, settings, callback, result, log )  {
-	var self = this;
-	result = result || [];
-
-	if (!list || !(list.length)) {
-		callback( result );
-		return;
-	}
-	this.log( 'Getting subtitles for file: ' + list[0].fullName, log );
-	this.search( settings, list[0] )
-		.then(function( infos ){
-			self.log( 'Subtitles got', log );
-
-			var numSub = Object.keys(infos).length;
-			self.log({
-				type: 'info',
-				message: 'Found ' + numSub + ' subtitles.',
-				info: infos
-			}, log);
-
-			var downloadList = [];
-			for ( var j in infos ) {
-				if ( infos[j].url ) {
-					downloadList.push( { url: infos[j].url, lang: j } );
-				}
-			}
-
-			self.extendObj( list[0], { subtitles: infos } );
-            list[0].downloadList = downloadList;
-			result.push( list[0] );
-			list.shift();
-			self.getSubtitles( list, settings, callback, result, log );
-		}).catch(function (err) {
-			self.log( 'Hash error' );
-			self.log( err, log );
-			list[0].error = true;
-			list[0].errorType = 'SUBTITLE_ERROR';
-			result.push( list[0] );
-			list.shift();
-			self.getSubtitles( list, settings, callback, result, log );
-		});
-
+/**
+ * Get the hash info of the current file.
+ * @requires opensubtitles-api
+ * @param fileName
+ * @returns {Promise}
+ */
+module.exports.getHash = function( fileName ) {
+    return this.getOpenSubtitles().extractInfo( fileName ); // Path must be included.
 };
+/**
+ * Logins to OpenSubtitles.
+ * @requires opensubtitles-api
+ * @returns {Promise}
+ */
+module.exports.subtitleLogin = function() {
+    var promise = this.getOpenSubtitles().login();
+    return promise;
+    /*.then(function (res) {
+        if ( callbackSettings && callbackSettings.success ) {
+            callbackSettings.success( res );
+        }
+    }).catch(function (err) {
+        if ( callbackSettings && callbackSettings.err ) {
+            callbackSettings.error( err );
+        }
+    });*/
+};
+
+/**
+ * Search subtitles.
+ * @param settings
+ * @param fileInfo
+ * @param callbackSettings
+ */
+module.exports.search = function( settings, fileInfo, callbackSettings ) {
+    settings = settings || {};
+    settings.langs = settings.langs || [ 'all' ];
+
+    this
+        .log( settings, this.logLevels.DEBUG )
+        .log( fileInfo, this.logLevels.DEBUG );
+
+    if (!fileInfo) {
+        this
+            .log( '[Missing file information: ' + fileInfo.fileName + ']', this.logLevels.ERROR );
+    }
+
+    return this.getOpenSubtitles().search({
+        sublanguageid: settings.langs.join(','),    // Can be an array.join with comma, 'all', or be omitted.
+        hash: fileInfo.moviehash,                   // Size + 64bit checksum of the first and last 64k
+        filesize: fileInfo.moviebytesize            // Total size, in bytes.
+    });
+};
+
+/**
+ * List file in a folder, not recursively.
+ * @param dir
+ * @param extensions - the valid extensions.
+ * @returns {Array}
+ */
+module.exports.listFiles = function( dir, extensions ) {
+    var goodFiles = [];
+    var fs = require('fs');
+    var files = fs.readdirSync( dir );
+
+    if (!extensions) {
+        return files;
+    }
+
+    for (var i in files) {
+        var extension = files[i].substr( files[i].lastIndexOf('.') );
+        if (extensions.indexOf( extension.replace('.', '') ) > -1) {
+            goodFiles.push({ fileName: files[i], path: dir, fullName: (dir ? dir + '/' : '') + files[i] });
+        }
+    }
+    return goodFiles;
+};
+
+/**
+ * List all files in a directory in Node.js recursively in a synchronous fashion
+ * @param dir
+ * @param filelist
+ * @param extensions - the valid extensions.
+ * @param recursive
+ * @returns {Array}
+ */
+//
+module.exports.walkSync = function(dir, filelist, extensions, recursive) {
+    var self = this;
+    recursive = typeof recursive === 'undefined' ? true: recursive;
+    filelist = filelist || [];
+
+    if (!recursive) {
+        return this.listFiles( dir, extensions );
+    };
+
+    var fs = fs || require('fs'),
+        files = fs.readdirSync(dir);
+
+    files.forEach(function(file) {
+        if ( fs.statSync(dir + '/' + file).isDirectory() ) {
+            filelist = self.walkSync(dir + '/' + file, filelist, extensions, recursive);
+        }
+        else {
+            if ( extensions ) {
+                var extension = file.substr( file.lastIndexOf('.') );
+                if (extensions.indexOf( extension.replace('.', '') ) > -1) {
+                    filelist.push({ fileName: file, path: dir, fullName: (dir ? dir + '/' : '') + file });
+                }
+            } else {
+                filelist.push({ fileName: file, path: dir, fullName: (dir ? dir + '/' : '') + file });
+            }
+        }
+    });
+    return filelist;
+};
+
+/**
+ * Get the hashes out of a list of files.
+ * @param list
+ * @param callback
+ * @param result - internal for recursion
+ */
+module.exports.getHashInfo = function( list, callback, result )  {
+    var self = this;
+    result = result || [];
+    // The list is finished.
+    if (!list || !(list.length)) {
+        callback( result );
+        return;
+    }
+    var objInfo = list[0];
+
+    this.log( '[Get hash for: ' + objInfo.fileName, this.logLevels.DEBUG );
+
+    this.getHash( objInfo.fullName )
+        .then(function( infos ){
+            self
+                .log('[Hash obtained]', self.logLevels.DEBUG)
+                .log(infos, self.logLevels.DEBUG);
+            // Extend current object with new info.
+            self.extendObj( objInfo, infos );
+            result.push( objInfo );
+            list.shift();
+            self.getHashInfo( list, callback, result );
+        }).catch(function (err) {
+            self
+                .log('[Hash error for file ' + objInfo.fileName + ']', self.logLevels.ALL)
+                .log(err, self.logLevels.DEBUG);
+
+            objInfo.error = true;
+            objInfo.errorType = 'HASH_ERROR';
+            result.push( objInfo );
+            list.shift();
+            self.getHashInfo( list, callback, result );
+        });
+};
+
+/**
+ * Search the subtitles for a list of file.
+ * @param list
+ * @param settings
+ * @param callback
+ * @param result - internal for recursion
+ */
+module.exports.getSubtitles  = function( list, settings, callback, result )  {
+    var self = this;
+    result = result || [];
+
+    // The list is finished.
+    if (!list || !(list.length)) {
+        callback( result );
+        return;
+    }
+
+    var objInfo = list[0];
+
+    // Result of an error, so we don't have to look for subs.
+    if (objInfo.error) {
+        this
+            .log('[Subtitles for ' + objInfo.fileName + ' skipped]', self.logLevels.ALL);
+        result.push( objInfo );
+        list.shift();
+        this.getSubtitles( list, settings, callback, result );
+        return;
+    }
+
+    this.log( '[Get subtitles for: ' + objInfo.fileName, this.logLevels.DEBUG );
+    this.search( settings, objInfo )
+        .then(function( infos ){
+            self
+                .log('[Subtitles obtained]', self.logLevels.DEBUG)
+                .log(infos, self.logLevels.DEBUG);
+
+            // Convert information in a useful structure.
+            var numSub = Object.keys(infos).length;
+
+            self
+                .log('[Found ' + numSub + ' ' + (numSub === 1 ? 'subtitle' : 'subtitles') + ']', self.logLevels.DEBUG);
+
+            var downloadList = [];
+            for ( var j in infos ) {
+                if ( infos[j].url ) {
+                    downloadList.push( { url: infos[j].url, lang: j } );
+                }
+            }
+
+            // Extend current object with subtitles information
+            self.extendObj( objInfo, { subtitles: infos } );
+            objInfo.downloadList = downloadList;
+            result.push( objInfo );
+            list.shift();
+            self.getSubtitles( list, settings, callback, result );
+        }).catch(function (err) {
+            self
+                .log('[Error in obtaining subtitles for file ' + objInfo.fileName + ']', self.logLevels.ALL)
+                .log( err, self.logLevels.DEBUG);
+
+            objInfo.error = true;
+            objInfo.errorType = 'SUBTITLE_ERROR';
+            result.push( objInfo );
+            list.shift();
+            self.getSubtitles( list, settings, callback, result );
+        });
+};
+
+
+
+
+
 
 module.exports.download = function (list, callbacks, log) {
     var http = require('http');

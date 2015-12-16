@@ -1,6 +1,6 @@
 {
   "name": "subcinode",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Your subs, now.",
   "keywords": [
     "subtitles",
@@ -8,7 +8,6 @@
     "opensubtitles",
     "movies"
   ],
-  "main": "./subcino.js",
   "author": {
     "name": "Alessandro Piana",
     "email": "a.piana89@gmail.com",
@@ -18,5 +17,9 @@
     "async": "^1.5.0",
     "http": "0.0.0",
     "opensubtitles-api": "^2.3.0"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "subcino": "subcino.js"
   }
 }
