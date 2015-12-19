@@ -17,7 +17,7 @@ npm install subcinode --global
 ## Documentation
 
 ```shell
-subcino -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -noOutput=<Boolean> -path=<String>
+subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -noOutput=<Boolean> -path=<String>
 ```
 
 | Options | Type | Default | Description |
@@ -33,22 +33,34 @@ subcino -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -noOu
 Search all subtitles for any video file in the current folder, recursively.
 
 ```shell
-subcino
+subcinode
 ```
 Search all English and Italian subtitles for any MP4 video file in the User Downloads folder, not recursively.
 
 ```shell
-subcino -langs=en,it -recursive=false -extensions=mp4 -path="/Users/my.user/Downloads"
+subcinode -langs=en,it -recursive=false -extensions=mp4 -path="/Users/my.user/Downloads"
 ```
 
 ## Changelog
+
+### Version 1.0.0
+
+* Major version bump
+* Fixed -langs settings bug
+* Added possibility to set default settings.
+
+### Version 0.0.7
+
+* Renamed package as subcinode.
+
+### Version 0.0.6
+
+* Major refactoring.
 
 ### Version 0.0.5
 
 * Added license, documentation, readme, changelog and authors.
 * Fixed multiple bugs.
-* Major refactoring.
-
 
 ### Version 0.0.4
 

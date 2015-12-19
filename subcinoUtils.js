@@ -8,6 +8,8 @@ module.exports.logLevels = {
     ALL: 10
 };
 
+module.exports.SETTINGS_FILE = 'settings.json';
+
 /* No comment needed */
 module.exports.currentLogLevel = 60; // DEBUG
 
@@ -42,15 +44,11 @@ module.exports.setDebugLevel = function( settings ) {
  * @name parseArgs
  */
 module.exports.parseArgs = function() {
+    var self = this;
     var argv = process.argv;
-    var args = {
-        recursive: true,
-        extensions: ['mp4', 'mkv', 'avi'],
-        langs: [ 'all' ],
-        path: process.cwd(), // By default, uses the current working directory.
-        useSubs: false,
-        debug: false
-    };
+    var args = this.defaultSettings;
+
+    var saveFile = false; // If true, save settings into a file
 
     for (var i = 0, len = argv.length; i < len; i++) {
         var arg = argv[i];
@@ -76,8 +74,34 @@ module.exports.parseArgs = function() {
         } else if ( (arg.indexOf('-path=') === 0) ) {
             // Specify a different path
             args.path = (arg.replace('-path=', '') || args.path);
+        } else if (arg === "-save") {
+            // We will save the settings into a file.
+            saveFile = true;
         }
     }
+
+    var isDefaultPath = args.path === "CWD";
+
+    if ( saveFile ) {
+        self.log( '[Saving settings]', self.logLevels.ALL );
+        if ( isDefaultPath ) { args.path = "CWD"; } else {
+            // Fix path backslash
+            if ( args.path.endsWith('/') ) {
+                args.path = args.path.substr( 0, args.path.length - 1 );
+            }
+        }
+
+        this.writeJSONFile( this.SETTINGS_FILE, args, function( err ) {
+            if ( err ) {
+                self.log( '[Error while saving settings]', self.logLevels.ALL );
+            } else {
+                self.log( '[Settings saved successfully]', self.logLevels.ALL );
+            }
+        });
+    }
+
+    // If path is the default, use it
+    args.path = isDefaultPath ? process.cwd() : args.path;
 
     // Fix path backslash
     if ( args.path.endsWith('/') ) {
@@ -150,6 +174,7 @@ module.exports.subtitleLogin = function() {
 
 /**
  * Search subtitles.
+ * @requires opensubtitles-api
  * @param settings
  * @param fileInfo
  * @param callbackSettings
@@ -176,6 +201,7 @@ module.exports.search = function( settings, fileInfo, callbackSettings ) {
 
 /**
  * List file in a folder, not recursively.
+ * @requires fs
  * @param dir
  * @param extensions - the valid extensions.
  * @returns {Array}
@@ -200,6 +226,7 @@ module.exports.listFiles = function( dir, extensions ) {
 
 /**
  * List all files in a directory in Node.js recursively in a synchronous fashion
+ * @requires fs
  * @param dir
  * @param filelist
  * @param extensions - the valid extensions.
@@ -322,8 +349,11 @@ module.exports.getSubtitles  = function( list, settings, callback, result )  {
 
             var downloadList = [];
             for ( var j in infos ) {
+
                 if ( infos[j].url ) {
-                    downloadList.push( { url: infos[j].url, lang: j } );
+                    if ( settings.langs.join('') === 'all' || settings.langs.indexOf(j) ) {
+                        downloadList.push( { url: infos[j].url, lang: j } );
+                    }
                 }
             }
 
@@ -346,17 +376,43 @@ module.exports.getSubtitles  = function( list, settings, callback, result )  {
         });
 };
 
-
-
-
-
-
-module.exports.download = function (list, callbacks, log) {
+/**
+ * Download a list of files.
+ * @requires http
+ * @requires fs
+ * @param list
+ * @param callbacks - the are two callbacks. Progress and Complete.
+ * * @param result - internal for recursion
+ * @returns {boolean}
+ */
+module.exports.download = function (list, callbacks, result) {
     var http = require('http');
     var fs = require('fs');
     var self = this;
+    var DOWNLOAD_DELAY = 400;
     //var parser = require('subtitles-parser');
 
+    result = result || { errors: [], files: [] };
+
+    // Moves to the following iteration
+    function moveNext( objInfo ) {
+        if ( objInfo.error ) {
+            objInfo.errorType = 'DOWNLOAD_ERROR';
+            result.errors.push( objInfo );
+        } else {
+            result.files.push( objInfo );
+        }
+
+        list.shift();
+        callbacks.progress( objInfo );
+
+        setTimeout(function(){
+            // Download next.
+            self.download(list, callbacks, result);
+        }, DOWNLOAD_DELAY);
+    }
+
+    // Prepares callbacks.
     function isFunction(functionToCheck) {
         var getType = {};
         return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
@@ -375,17 +431,17 @@ module.exports.download = function (list, callbacks, log) {
     }
     // Termination condition. Function is recursive
     if (!list.length) {
-        callbacks.complete();
+        callbacks.complete( result );
         return true;
     }
 
-    this.log('Downloading ' + list[0].url + '...', log);
+    var objInfo = list[0];
+
+    this.log('[Downloading ' + objInfo.url + '...]', this.logLevels.DEBUG);
+
     try {
-        var destinationPath = list[0].path;
-        var destinationName = list[0].saveAs;
-
-
-        // TODO CHECK BEFORE THAT EVERY PATH UP TO THAT, EXISTS
+        var destinationPath = objInfo.path;
+        var destinationName = objInfo.saveAs;
 
         if (!fs.existsSync(destinationPath)) {
             fs.mkdirSync(destinationPath);
@@ -396,26 +452,87 @@ module.exports.download = function (list, callbacks, log) {
 
         var file = fs.createWriteStream(targetFilePath);
 
-        var request = http.get(list[0].url, function (response) {
+        var request = http.get( objInfo.url, function (response) {
             response.pipe(file);
-            self.log('Downloaded ' + destinationName, log);
             //TODO parser.fromSrt parse srt to array, add Subcino advertising, rewrite to file
-            list.shift();
-            callbacks.progress();
-            setTimeout(function(){
-                // Download next.
-                self.download(list, callbacks);
-            }, 200);
-
+            moveNext( objInfo );
         });
     } catch (ex) {
-        console.log(ex);
-        self.log('ERROR!' + ex.message + 'NOT Downloaded ' + fileName + ' as ' + destinationName, log);
-        list.shift();
-        callbacks.progress();
-        setTimeout(function(){
-            // Download next.
-            self.download(list, callbacks);
-        }, 200);
+        self
+            .log('[Download error for ' + destinationName + ']', self.logLevels.ERROR)
+            .log(ex, self.logLevels.DEBUG);
+        objInfo.error = true;
+        moveNext( objInfo );
     }
+};
+
+/**
+ * Reads a JSON file.
+ * @param file
+ * @param callback
+ */
+module.exports.readJSONFile = function( file, callback ) {
+    var jsonfile = require('jsonfile');
+    if (!file) {
+        return;
+    }
+    if (!callback) {
+        return jsonfile.readFileSync(file);
+    } else {
+        return jsonfile.readFile(file, function(err, obj) {
+            callback( obj || {}, err );
+        })
+    }
+};
+
+module.exports.writeJSONFile = function( file, obj, callback ) {
+    var jsonfile = require('jsonfile');
+    if (!file || !obj) {
+        return;
+    }
+    if (!callback) {
+        return jsonfile.writeFileSync(file, obj);
+    } else {
+        return jsonfile.writeFile(file, obj, {spaces: 2}, function(err) {
+            if ( callback ) {
+                callback( err );
+            }
+        });
+    }
+};
+
+
+module.exports.getDefaultSettings = function( callback ) {
+    var self = this;
+
+    self.defaultSettings = {
+        recursive: true,
+        extensions: ['mp4', 'mkv', 'avi'],
+        langs: [ 'all' ],
+        path: "CWD", // By default, uses the current working directory.
+        useSubs: false,
+        debug: false
+    };
+
+    try {
+
+        this.readJSONFile( this.SETTINGS_FILE, function( data, error ) {
+            if ( error ) {
+                // We ignore "File not found" error.
+                if ( error.code !== 'ENOENT' ) {
+                    self.log('[Error while getting saved settings]', self.logLevels.ERROR);
+                    self.log( error, self.logLevels.DEBUG );
+                }
+                callback( self.defaultSettings );
+            } else {
+                self.extendObj( self.defaultSettings, data || {} );
+                callback( self.defaultSettings );
+            }
+        });
+    } catch( ex ) {
+        self.log('[Error while getting saved settings]', self.logLevels.ERROR);
+        self.log( ex, self.logLevels.DEBUG );
+        callback( self.defaultSettings );
+    }
+
 };
