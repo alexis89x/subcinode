@@ -2,9 +2,9 @@
 
 Your subs, now from your console.
 
-**Subcino(de)** is a npm packate to automatically download the correct subtitles for your video files. It is the node version of [Subcino](http://www.subcino.com).
+**Subcino(de)** is a npm package to automatically download the correct subtitles for your video files. It is the node version of [Subcino](http://www.subcino.com).
 
-It is completely free, and does not require registration. Basically, it is a legit wrapper for [Open Subtitles](http://www.opensubtitles.org) APIs;
+It is completely free, and does not require registration. Basically, it is a legit wrapper for [Open Subtitles](http://www.opensubtitles.org) APIs.
 
 ## Installation
 
