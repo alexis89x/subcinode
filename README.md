@@ -17,16 +17,17 @@ npm install subcinode --global
 ## Documentation
 
 ```shell
-subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -noOutput=<Boolean> -path=<String>
+subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -noOutput=<Boolean> -path=<String> -save
 ```
 
 | Options | Type | Default | Description |
 |---|---|---|---|
-| langs | String | 'all' | Comma-separated value to specify the langs to download. Default is 'all'. Standard 2-letters code notation applied. E.g. 'en,it,de'. |
+| langs | String | 'all' | Comma-separated value to specify the langs to download. Default is 'all'. See below for valid values for languages.
 | recursive | Boolean | true | If true, navigates through all folders under the current one. |
 | useSubs | Boolean | false | If true, subtitles are saved under a 'subs/' folder. Otherwise, they are same in the same folder as the video file. |
 | extensions | String | 'mp4,mkv,avi' | Comma-separated value of the extensions to search for. |
 | path | String | Current shell directory | If specified, looks for video files under that path. |
+| save | String | <Not used> | If `-save` is specified, the current settings will be saved as default. |
 
 ### Valid languages
 
@@ -101,16 +102,25 @@ subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -no
 
 ## Usage Examples
 
-Search all subtitles for any video file in the current folder, recursively.
+Search all subtitles with the default settings.
 
 ```shell
 subcinode
 ```
+
 Search all English and Italian subtitles for any MP4 video file in the User Downloads folder, not recursively.
 
 ```shell
-subcinode -langs=en,it -recursive=false -extensions=mp4 -path="/Users/my.user/Downloads"
+subcinode -langs=eng,ita -recursive=false -extensions=mp4 -path="/Users/my.user/Downloads"
 ```
+
+Search with specific settings and save them as default
+
+```shell
+subcinode -save -langs=eng,ita -recursive=false -extensions=mp4
+```
+
+(So, from that moment on, it is possible to write just subcinode to perform the same search as before)
 
 ## Changelog
 
