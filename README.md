@@ -103,27 +103,35 @@ subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -pa
 
 ## Usage Examples
 
-Search all subtitles with the default settings.
+###Search all subtitles with the default settings.
 
 ```shell
 subcinode
 ```
 
-Search all English and Italian subtitles for any MP4 video file in the User Downloads folder, not recursively.
+###Search all English and Italian subtitles for any MP4 video file in the User Downloads folder, not recursively.
 
 ```shell
 subcinode -langs=eng,ita -recursive=false -extensions=mp4 -path="/Users/my.user/Downloads"
 ```
 
-Search with specific settings and save them as default
+###Search with specific settings and save them as default
 
 ```shell
 subcinode -save -langs=eng,ita -recursive=false -extensions=mp4
 ```
 
-(So, from that moment on, it is possible to write just subcinode to perform the same search as before)
+So, from that moment on, it is possible to write
+
+```shell
+subcinode
+```
+ to perform the search with the default saved settings.
 
 ## Changelog
+
+### Version 1.0.1
+* Minor documentation fixes.
 
 ### Version 1.0.0
 
