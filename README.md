@@ -17,7 +17,7 @@ npm install subcinode --global
 ## Documentation
 
 ```shell
-subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -noOutput=<Boolean> -path=<String> -save
+subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -path=<String> -save
 ```
 
 | Options | Type | Default | Description |
@@ -28,6 +28,7 @@ subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -no
 | extensions | String | 'mp4,mkv,avi' | Comma-separated value of the extensions to search for. |
 | path | String | Current shell directory | If specified, looks for video files under that path. |
 | save | String | <Not used> | If `-save` is specified, the current settings will be saved as default. |
+| debug | String | <Not used> | If `-debug` is specified, more information is given in the console. |
 
 ### Valid languages
 
