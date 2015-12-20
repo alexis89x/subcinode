@@ -17,7 +17,7 @@ npm install subcinode --global
 ## Documentation
 
 ```shell
-subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -path=<String> -save
+subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -path=<String> -save -debug
 ```
 
 | Options | Type | Default | Description |
