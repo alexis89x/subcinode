@@ -28,6 +28,77 @@ subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -no
 | extensions | String | 'mp4,mkv,avi' | Comma-separated value of the extensions to search for. |
 | path | String | Current shell directory | If specified, looks for video files under that path. |
 
+### Valid languages
+
+| Language      | Value       	|
+| ------------- |--------------	|
+| English 		| eng 			| 
+| Italiano 		| ita 			| 
+| French 		| fre 			| 
+| German 		| ger 			| 
+| Spanish 		| spa 			| 
+| Arabic 		| ara 			| 
+| Afrikaans 	| afr 			| 
+| Albanian 		| alb 			| 
+| Armenian 		| arm 			| 
+| Basque 		| baq 			| 
+| Belarusian 	| bel 			| 
+| Bengali 		| ben 			| 
+| Bosnian | bos | 
+| Breton | bre | 
+| Bulgarian | bul | 
+| Burmese | bur | 
+| Catalan | cat | 
+| Chinese (simplified) | chi | 
+| Croatian | hr | 
+| Czech | cze | 
+| Danish | dan | 
+| Dutch | dut | 
+| Esperanto | epo | 
+| Estonian | est | 
+| Finnish | fin | 
+| Galician | glg | 
+| Georgian | geo | 
+| Greek | ell | 
+| Hebrew | heb | 
+| Hindi | hin | 
+| Hungarian | hun | 
+| Icelandic | ice | 
+| Indonesian | ind | 
+| Japanese | jpn | 
+| Kazakh | kaz | 
+| Khmer | khm | 
+| Korean | kor | 
+| Latvian | lav | 
+| Lithuanian | lit | 
+| Luxembourgish | ltz | 
+| Macedonian | mac | 
+| Malay | may | 
+| Malayalam | mal | 
+| Mongolian | mon | 
+| Norwegian | nor | 
+| Occitan | oci | 
+| Persian | per | 
+| Polish | pol | 
+| Portuguese | por | 
+| Portuguese (BR) | pob | 
+| Romanian | rum | 
+| Russian | rus | 
+| Serbian | scc | 
+| Sinhalese | sin | 
+| Slovak | slo | 
+| Slovenian | slv | 
+| Swahili | swa | 
+| Swedish | swe | 
+| Syriac | syr | 
+| Tamil | tam | 
+| Telugu | tel | 
+| Thai | tha | 
+| Turkish | tur | 
+| Ukrainian | ukr | 
+| Urdu | urd | 
+| Vietnamese | vie |
+
 ## Usage Examples
 
 Search all subtitles for any video file in the current folder, recursively.
