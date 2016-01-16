@@ -29,93 +29,94 @@ subcinode -useSubs -langs=<String> -recursive=<Boolean> -extensions=<String> -pa
 | path | String | Current shell directory | If specified, looks for video files under that path. |
 | save | String | <Not used> | If `-save` is specified, the current settings will be saved as default. |
 | debug | String | <Not used> | If `-debug` is specified, more information is given in the console. |
+| settings | String | <Not used> | If `-settings` is specified, subcino shows the current settings ( and terminates ). |
 
 ### Valid languages
 
 | Language      | Value       	|
-| ------------- |--------------	|
-| English 		| eng 			| 
-| Italiano 		| ita 			| 
-| French 		| fre 			| 
-| German 		| ger 			| 
-| Spanish 		| spa 			| 
-| Arabic 		| ara 			| 
-| Afrikaans 	| afr 			| 
-| Albanian 		| alb 			| 
-| Armenian 		| arm 			| 
-| Basque 		| baq 			| 
-| Belarusian 	| bel 			| 
-| Bengali 		| ben 			| 
-| Bosnian | bos | 
-| Breton | bre | 
-| Bulgarian | bul | 
-| Burmese | bur | 
-| Catalan | cat | 
-| Chinese (simplified) | chi | 
-| Croatian | hr | 
-| Czech | cze | 
-| Danish | dan | 
-| Dutch | dut | 
-| Esperanto | epo | 
-| Estonian | est | 
-| Finnish | fin | 
-| Galician | glg | 
-| Georgian | geo | 
-| Greek | ell | 
-| Hebrew | heb | 
-| Hindi | hin | 
-| Hungarian | hun | 
-| Icelandic | ice | 
-| Indonesian | ind | 
-| Japanese | jpn | 
-| Kazakh | kaz | 
-| Khmer | khm | 
-| Korean | kor | 
-| Latvian | lav | 
-| Lithuanian | lit | 
-| Luxembourgish | ltz | 
-| Macedonian | mac | 
-| Malay | may | 
-| Malayalam | mal | 
-| Mongolian | mon | 
-| Norwegian | nor | 
-| Occitan | oci | 
-| Persian | per | 
-| Polish | pol | 
-| Portuguese | por | 
-| Portuguese (BR) | pob | 
-| Romanian | rum | 
-| Russian | rus | 
-| Serbian | scc | 
-| Sinhalese | sin | 
-| Slovak | slo | 
-| Slovenian | slv | 
-| Swahili | swa | 
-| Swedish | swe | 
-| Syriac | syr | 
-| Tamil | tam | 
-| Telugu | tel | 
-| Thai | tha | 
-| Turkish | tur | 
-| Ukrainian | ukr | 
-| Urdu | urd | 
+|------------- |--------------|
+| English 		| eng 			|
+| Italiano 		| ita 			|
+| French 		| fre 			|
+| German 		| ger 			|
+| Spanish 		| spa 			|
+| Arabic 		| ara 			|
+| Afrikaans 	| afr 			|
+| Albanian 		| alb 			|
+| Armenian 		| arm 			|
+| Basque 		| baq 			|
+| Belarusian 	| bel 			|
+| Bengali 		| ben 			|
+| Bosnian | bos |
+| Breton | bre |
+| Bulgarian | bul |
+| Burmese | bur |
+| Catalan | cat |
+| Chinese (simplified) | chi |
+| Croatian | hr |
+| Czech | cze |
+| Danish | dan |
+| Dutch | dut |
+| Esperanto | epo |
+| Estonian | est |
+| Finnish | fin |
+| Galician | glg |
+| Georgian | geo |
+| Greek | ell |
+| Hebrew | heb |
+| Hindi | hin |
+| Hungarian | hun |
+| Icelandic | ice |
+| Indonesian | ind |
+| Japanese | jpn |
+| Kazakh | kaz |
+| Khmer | khm |
+| Korean | kor |
+| Latvian | lav |
+| Lithuanian | lit |
+| Luxembourgish | ltz |
+| Macedonian | mac |
+| Malay | may |
+| Malayalam | mal |
+| Mongolian | mon |
+| Norwegian | nor |
+| Occitan | oci |
+| Persian | per |
+| Polish | pol |
+| Portuguese | por |
+| Portuguese (BR) | pob |
+| Romanian | rum |
+| Russian | rus |
+| Serbian | scc |
+| Sinhalese | sin |
+| Slovak | slo |
+| Slovenian | slv |
+| Swahili | swa |
+| Swedish | swe |
+| Syriac | syr |
+| Tamil | tam |
+| Telugu | tel |
+| Thai | tha |
+| Turkish | tur |
+| Ukrainian | ukr |
+| Urdu | urd |
 | Vietnamese | vie |
 
 ## Usage Examples
 
-###Search all subtitles with the default settings.
+### Search all subtitles with the default settings.
 
 ```shell
 subcinode
 ```
 
-###Search all English and Italian subtitles for any MP4 video file in the User Downloads folder, not recursively.
+### Search all English and Italian subtitles for any MP4 or AVI video file in the User Downloads folder, not recursively.
 
 ```shell
-subcinode -langs=eng,ita -recursive=false -extensions=mp4 -path="/Users/my.user/Downloads"
+subcinode -langs=eng,ita -recursive=false -extensions=mp4,avi -path="/Users/my.user/Downloads"
 ```
 
-###Search with specific settings and save them as default
+### Search with specific settings and save them as default
 
 ```shell
 subcinode -save -langs=eng,ita -recursive=false -extensions=mp4
@@ -127,8 +128,27 @@ So, from that moment on, it is possible to write
 subcinode
 ```
  to perform the search with the default saved settings.
+ 
+### Show the current settings ( and terminate the program )
+
+```shell
+subcinode -settings
+```
 
 ## Changelog
+
+### Version 1.1.3
+* Fixed dependency problems
+
+### Version 1.1.2
+* Fixed endsWith problem for some users
+
+### Version 1.1.1
+* Removed unnecessary files
+
+### Version 1.1.0
+* Added subtitle parsing
+* Added -settings parameter
 
 ### Version 1.0.1
 * Minor documentation fixes.

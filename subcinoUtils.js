@@ -77,6 +77,9 @@ module.exports.parseArgs = function() {
         } else if (arg === "-save") {
             // We will save the settings into a file.
             saveFile = true;
+        } else if (arg === "-settings") {
+            // Show more log
+            args.onlySettings = true;
         }
     }
 
@@ -86,7 +89,7 @@ module.exports.parseArgs = function() {
         self.log( '[Saving settings]', self.logLevels.ALL );
         if ( isDefaultPath ) { args.path = "CWD"; } else {
             // Fix path backslash
-            if ( args.path.endsWith('/') ) {
+            if ( args.path.lastIndexOf('/') === (args.path.length-1) ) {
                 args.path = args.path.substr( 0, args.path.length - 1 );
             }
         }
@@ -104,7 +107,7 @@ module.exports.parseArgs = function() {
     args.path = isDefaultPath ? process.cwd() : args.path;
 
     // Fix path backslash
-    if ( args.path.endsWith('/') ) {
+    if ( args.path.lastIndexOf('/') === (args.path.length-1) ) {
         args.path = args.path.substr( 0, args.path.length - 1 );
     }
     return args;
@@ -452,6 +455,8 @@ module.exports.download = function (list, callbacks, result) {
 
         var file = fs.createWriteStream(targetFilePath);
 
+        objInfo.targetFilePath = targetFilePath;
+
         var request = http.get( objInfo.url, function (response) {
             response.pipe(file);
             //TODO parser.fromSrt parse srt to array, add Subcino advertising, rewrite to file
@@ -500,6 +505,54 @@ module.exports.writeJSONFile = function( file, obj, callback ) {
         });
     }
 };
+
+module.exports.insertPromoSub = function(fileStr) {
+    var parser = require('subtitles-parser');
+    var srt = parser.fromSrt(fileStr, true);
+    var startPos = Math.floor(srt.length/4); //Math.floor(srt.length/2);
+
+    var found = 0;
+
+    for (var i = startPos; i < srt.length ; i++) {
+        if (i != (srt.length - 1)) {
+            var availableInterval = parseInt(srt[i + 1].startTime, 10) - parseInt(srt[i].endTime, 10);
+            //if we have more than 3 seconds between a caption and the next one
+            if (availableInterval > 3000) {
+                var matchedIndex = i + 1;
+
+                var id = matchedIndex + 1;
+
+                var startTime = parseInt(srt[matchedIndex - 1].endTime, 10) + 500;
+                var endTime = parseInt(srt[matchedIndex].startTime, 10) - 500;
+                if ( endTime - startTime > 5000 ) {
+                    endTime = startTime + 5000;
+                    // It can last 5000 milliseconds maximum.
+                }
+
+                var promoSub = {
+                    id : id.toString(),
+                    startTime : startTime,
+                    endTime : endTime,
+                    text : "Downloaded with Subcino [www.subcino.com]"
+                };
+
+                srt.splice(matchedIndex, 0, promoSub);
+
+                for (var j = matchedIndex + 1; j < srt.length ; j++) {
+                    srt[j].id = (parseInt(srt[j].id) + 1).toString();
+                }
+
+                found++;
+                /*if ( found == 2 ) {
+                    return parser.toSrt(srt);
+                }*/
+            }
+        }
+    }
+    return parser.toSrt(srt);
+};
+
+// TODO ARGS TO RETRIVE JUST THE DEFAULT SETTINGS.
 
 
 module.exports.getDefaultSettings = function( callback ) {

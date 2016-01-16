@@ -14,6 +14,11 @@ subUtils.getDefaultSettings( function( settings ) {
     // Process the shell arguments.
     var args = subUtils.parseArgs();
 
+    if ( args.onlySettings ) {
+        console.log( settings );
+        return;
+    }
+
     subUtils.setDebugLevel( args );
 
     subUtils
@@ -77,6 +82,23 @@ subUtils.getDefaultSettings( function( settings ) {
                                 ' out of ' +
                                 (result.files.length + result.errors.length) +
                                 ' files]', subUtils.logLevels.ALL);
+
+                            for ( var j = 0; j < result.files.length; j++ ) {
+                                // TRY INSERT PROMO SUB.
+                                try {
+                                    var fs = require('fs');
+                                    var srt = fs.readFileSync( result.files[j].targetFilePath, { encoding: 'utf-8' });
+                                    var data = subUtils.insertPromoSub( srt );
+                                    if ( data ) {
+                                        fs.writeFileSync( result.files[j].targetFilePath, data );
+                                    }
+                                } catch(ex) {
+                                    subUtils.log( ex.stack, subUtils.logLevels.ERROR );
+                                }
+                            }
+
+
+
                             subUtils.log( 'Thanks for using Subcino. Please consider to donate at www.subcino.com!', subUtils.logLevels.ALL );
                         },
                         progress: function( objInfo ) {
