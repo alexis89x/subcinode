@@ -27,7 +27,7 @@ subUtils.getDefaultSettings( function( settings ) {
 
     subUtils.log('[Navigating path...]', subUtils.logLevels.ALL );
 
-    var files = subUtils.walkSync( args.path, null, args.extensions, args.recursive );
+    var files = subUtils.walkSync( args.path, null, args.extensions, args.langs, args.recursive );
     subUtils
         .log('[Found ' + files.length + ' ' + (files.length != 1 ? 'files' : 'file') + ']', subUtils.logLevels.ALL )
         .log('[File list]', subUtils.logLevels.DEBUG);
@@ -59,11 +59,7 @@ subUtils.getDefaultSettings( function( settings ) {
                         var fileExt = subObj.fileName.substr( subObj.fileName.lastIndexOf('.') );
                         subObj.subfolder = args.useSubs ? '/subs/' : '/';
                         for ( var k in subObj.downloadList ) {
-                            subObj.downloadList[k].saveAs =
-                                subObj.fileName.substr( 0, subObj.fileName.lastIndexOf('.') ) +
-                                '.' +
-                                subObj.downloadList[k].lang + '.srt';
-
+                            subObj.downloadList[k].saveAs = subUtils.saveAs(subObj.fileName, subObj.downloadList[k].lang);
                             subObj.downloadList[k].path = subObj.path + subObj.subfolder;
                         }
                         dwnList = dwnList.concat( subtitles[j].downloadList );

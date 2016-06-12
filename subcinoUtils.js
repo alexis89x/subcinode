@@ -1,3 +1,5 @@
+var isoLangs = require("langs");
+
 /* No comment needed */
 module.exports.logLevels = {
     DEBUG: 60,
@@ -207,9 +209,10 @@ module.exports.search = function( settings, fileInfo, callbackSettings ) {
  * @requires fs
  * @param dir
  * @param extensions - the valid extensions.
+ * @param langs - the langs to download subtitles for
  * @returns {Array}
  */
-module.exports.listFiles = function( dir, extensions ) {
+module.exports.listFiles = function( dir, extensions, langs ) {
     var goodFiles = [];
     var fs = require('fs');
     var files = fs.readdirSync( dir );
@@ -220,7 +223,7 @@ module.exports.listFiles = function( dir, extensions ) {
 
     for (var i in files) {
         var extension = files[i].substr( files[i].lastIndexOf('.') );
-        if (extensions.indexOf( extension.replace('.', '') ) > -1) {
+        if (extensions.indexOf( extension.replace('.', '') ) > -1 && this.shouldDownload(dir, files[i], langs, 0)) {
             goodFiles.push({ fileName: files[i], path: dir, fullName: (dir ? dir + '/' : '') + files[i] });
         }
     }
@@ -233,17 +236,18 @@ module.exports.listFiles = function( dir, extensions ) {
  * @param dir
  * @param filelist
  * @param extensions - the valid extensions.
+ * @param langs - the langs to download subtitles for
  * @param recursive
  * @returns {Array}
  */
 //
-module.exports.walkSync = function(dir, filelist, extensions, recursive) {
+module.exports.walkSync = function(dir, filelist, extensions, langs, recursive) {
     var self = this;
     recursive = typeof recursive === 'undefined' ? true: recursive;
     filelist = filelist || [];
 
     if (!recursive) {
-        return this.listFiles( dir, extensions );
+        return this.listFiles( dir, extensions, langs );
     };
 
     var fs = fs || require('fs'),
@@ -251,12 +255,12 @@ module.exports.walkSync = function(dir, filelist, extensions, recursive) {
 
     files.forEach(function(file) {
         if ( fs.statSync(dir + '/' + file).isDirectory() ) {
-            filelist = self.walkSync(dir + '/' + file, filelist, extensions, recursive);
+            filelist = self.walkSync(dir + '/' + file, filelist, extensions, langs, recursive);
         }
         else {
             if ( extensions ) {
                 var extension = file.substr( file.lastIndexOf('.') );
-                if (extensions.indexOf( extension.replace('.', '') ) > -1) {
+                if (extensions.indexOf( extension.replace('.', '') ) > -1 && self.shouldDownload(dir, file, langs, 0)) {
                     filelist.push({ fileName: file, path: dir, fullName: (dir ? dir + '/' : '') + file });
                 }
             } else {
@@ -266,6 +270,24 @@ module.exports.walkSync = function(dir, filelist, extensions, recursive) {
     });
     return filelist;
 };
+
+module.exports.shouldDownload = function(dir, file, langs, index) {
+    var fs = fs || require('fs'),
+        lang = isoLangs.where("2", langs[index])["1"];
+
+    var completeSubName = dir + '/' + this.saveAs(file, lang);
+    try {
+        fs.accessSync(completeSubName, fs.F_OK);
+        index++;
+        if (index < langs.length) {
+            return this.shouldDownload(dir, file, langs, index)
+        } else {
+            return false;
+        }
+    } catch (e) {
+        return true;
+    }
+}
 
 /**
  * Get the hashes out of a list of files.
@@ -378,6 +400,20 @@ module.exports.getSubtitles  = function( list, settings, callback, result )  {
             self.getSubtitles( list, settings, callback, result );
         });
 };
+
+/**
+ * Get the name for the final download subtitle file, based on name of the video file
+ * and subtitle language
+ *
+ * @param name
+ * @param lang
+ * @returns {string}
+ */
+module.exports.saveAs = function (name, lang) {
+    return name.substr( 0, name.lastIndexOf('.') ) +
+    '.' +
+    lang + '.srt';
+}
 
 /**
  * Download a list of files.
