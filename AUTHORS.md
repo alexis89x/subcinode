@@ -2,7 +2,7 @@
 
 ### Lead
 
- - Alessandro Piana @alex89x
+ - Alessandro Piana @alexis89x
 
 ### Contributors
 
