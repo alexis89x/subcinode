@@ -1,6 +1,6 @@
 import { parseSync, stringifySync } from 'subtitle';
 
-export const PROMO_TEXT = 'Downloaded with Subcino [www.subcino.com]';
+export const PROMO_TEXT = 'Downloaded with subcinode - https://github.com/alexis89x/subcinode';
 
 const MIN_GAP_MS = 3000; // only fill gaps longer than this
 const PROMO_PADDING_MS = 500; // keep clear of the surrounding cues

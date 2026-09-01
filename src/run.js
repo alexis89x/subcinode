@@ -148,7 +148,7 @@ export async function run(parsed = {}, deps = {}) {
       `${errors.length} ${errors.length === 1 ? 'error' : 'errors'}.]`,
     logLevels.ALL
   );
-  log('Thanks for using Subcino. Please consider to donate at www.subcino.com!', logLevels.ALL);
+  log('Thanks for using subcinode! https://github.com/alexis89x/subcinode', logLevels.ALL);
 
   return { settings, downloaded, errors };
 }

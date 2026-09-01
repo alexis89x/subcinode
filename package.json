@@ -1,7 +1,7 @@
 {
   "name": "subcinode",
   "version": "2.0.0",
-  "description": "Your subs, now.",
+  "description": "Automatically download the right subtitles for your local video files, from the console.",
   "type": "module",
   "keywords": [
     "subtitles",
@@ -28,6 +28,11 @@
     "node": ">=20"
   },
   "main": "src/run.js",
+  "exports": {
+    ".": "./src/run.js",
+    "./providers": "./src/providers/index.js",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "subcinode": "bin/subcinode.js"
   },
