@@ -1,7 +1,8 @@
 {
   "name": "subcinode",
-  "version": "1.1.3",
+  "version": "2.0.0",
   "description": "Your subs, now.",
+  "type": "module",
   "keywords": [
     "subtitles",
     "subcino",
@@ -14,16 +15,36 @@
     "email": "alessandro.89@gmail.com",
     "url": "https://www.alessandropiana.com"
   },
-  "dependencies": {
-    "async": "^1.5.0",
-    "http": "0.0.0",
-    "jsonfile": "^2.2.3",
-    "langs": "^1.0.2",
-    "opensubtitles-api": "^2.3.0",
-    "subtitles-parser": "0.0.2"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexis89x/subcinode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alexis89x/subcinode/issues"
+  },
+  "homepage": "https://github.com/alexis89x/subcinode#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "src/run.js",
+  "bin": {
+    "subcinode": "bin/subcinode.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE.txt"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "start": "node bin/subcinode.js"
   },
   "preferGlobal": true,
-  "bin": {
-    "subcinode": "subcino.js"
+  "dependencies": {
+    "commander": "^12.1.0",
+    "langs": "^2.0.0",
+    "subtitle": "^4.2.1"
   }
 }
