@@ -51,8 +51,12 @@ A language is skipped when its target file already exists, so re-running is chea
    export OPENSUBTITLES_PASSWORD=your_password
    ```
 
-   Put these in your shell profile (`~/.zshrc`, `~/.bashrc`, …) to make them permanent. `subcinode`
-   never writes credentials to disk.
+   Put these in your shell profile (`~/.zshrc`, `~/.bashrc`, …) to make them permanent.
+
+   **Or use a `.env` file.** Copy `.env.example` to `.env` and fill it in — `subcinode` loads
+   `./.env` from the working directory automatically (any Node ≥ 20). Real environment variables
+   take precedence over the file. `.env` is git-ignored; `subcinode` never writes credentials to
+   disk.
 
 ---
 

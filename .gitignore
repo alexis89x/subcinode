@@ -3,4 +3,6 @@
 tests/
 node_modules/
 settings.json
+.env
+.env.local
 
